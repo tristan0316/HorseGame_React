@@ -37,7 +37,7 @@ import { RadioButton } from 'react-native-paper';
 
 function App() { 
 
- 
+  
   const [mile1, setmile1] = useState(0);
   const [mile2, setmile2] = useState(0);
   const [ratio1, setratio1] = useState(2);
@@ -111,35 +111,60 @@ function App() {
   //getexrate();
 
   
+  
 
     // this function runs the race, then return an integer to indicate winner 
-    function run(){
-      setInterval(() => {
-        if(mile1<1){
-          var RandomNumber1 = Math.floor(Math.random() * 100)*0.001  ;
-          console.log("Random=" ,RandomNumber1)
-          setmile1(mile1+RandomNumber1);
-          console.log("Mile1 from function:" ,mile1)
-           }
-        else{
-          return;
-        }
-      }, 1000);
-      // let winhorse=0;
-      // var RandomNumber = Math.floor(Math.random() * 2)+1;
-      // console.log(RandomNumber)
-      // if(RandomNumber==1){
+
+
+    
+
+    async function run(){
+      var winner=0;
+      winner= await new Promise(function (resolve, reject) {
+        setmile1(0);
+        setmile2(0);
+        var countmile1=0;
+        var Idd1=setInterval(() => {
+          if(countmile1<1){
+            var RandomNumber1 = Math.floor(Math.random() * 100)*0.002  ;
+            console.log("Random=" ,RandomNumber1);
+            setmile1(mile1=>mile1+RandomNumber1);
+            countmile1=countmile1+RandomNumber1
+            }
+          else{
+            if(winner==0){
+              //winner=1;
+              resolve(1);
+              //console.log("Winner: ", winner)
+            }
+            clearInterval(Idd1);
+          }
+        }, 1000);
+
+        var countmile2=0;
+        var Idd2=setInterval(() => {
+          if(countmile2<1){
+            var RandomNumber2 = Math.floor(Math.random() * 100)*0.002  ;
+            console.log("Random=" ,RandomNumber2);
+            setmile2(mile2=>mile2+RandomNumber2);
+            countmile2=countmile2+RandomNumber2
+            }
+          else{
+            if(winner==0){
+              //winner=2;
+              resolve(2);
+              //console.log("Winner: ", winner)
+            }
+            clearInterval(Idd2);
+          }
+        }, 1000);
         
-      //   winhorse=1;
-      // }
-      // if(RandomNumber==2){
-      //   winhorse=2;
-      // }
-      // return winhorse;
+      });
+      console.log("Winner: "+ winner);
+      update(winner,bethorse,betsize);
     }
 
     function update(winner,bet,betamount){
-
       if(winner==1){
         //adjust balance
         if(winner==bet){
@@ -172,8 +197,7 @@ function App() {
     }
 
     function start_race(){
-      winner= run();
-      update(winner,bethorse,betsize)
+      run();
     }
 
   return (
@@ -193,8 +217,10 @@ function App() {
         title="StartRunning"
         onPress={() =>start_race() }
       />
+    <Text>Horse1: {mile1}</Text>
     <Horse mile={mile1} >  
     </Horse>
+    <Text>Horse2: {mile2}</Text>
     <Horse mile={mile2} >  
     </Horse>
     </View>
