@@ -37,6 +37,7 @@ import { RadioButton } from 'react-native-paper';
 
 function App() { 
 
+ 
   const [mile1, setmile1] = useState(0);
   const [mile2, setmile2] = useState(0);
   const [ratio1, setratio1] = useState(2);
@@ -113,28 +114,28 @@ function App() {
 
     // this function runs the race, then return an integer to indicate winner 
     function run(){
-      // setInterval(() => {
-      //   if(mile1<1){
-      //     var RandomNumber1 = Math.floor(Math.random() * 100)*0.001  ;
-      //     console.log(RandomNumber1)
-      //     setmile1(mile1+RandomNumber1);
-      //     console.log(mile1)
-      //      }
-      //   else{
-      //     return;
-      //   }
-      // }, 1000);
-      let winhorse=0;
-      var RandomNumber = Math.floor(Math.random() * 2)+1;
-      console.log(RandomNumber)
-      if(RandomNumber==1){
+      setInterval(() => {
+        if(mile1<1){
+          var RandomNumber1 = Math.floor(Math.random() * 100)*0.001  ;
+          console.log("Random=" ,RandomNumber1)
+          setmile1(mile1+RandomNumber1);
+          console.log("Mile1 from function:" ,mile1)
+           }
+        else{
+          return;
+        }
+      }, 1000);
+      // let winhorse=0;
+      // var RandomNumber = Math.floor(Math.random() * 2)+1;
+      // console.log(RandomNumber)
+      // if(RandomNumber==1){
         
-        winhorse=1;
-      }
-      if(RandomNumber==2){
-        winhorse=2;
-      }
-      return winhorse;
+      //   winhorse=1;
+      // }
+      // if(RandomNumber==2){
+      //   winhorse=2;
+      // }
+      // return winhorse;
     }
 
     function update(winner,bet,betamount){
