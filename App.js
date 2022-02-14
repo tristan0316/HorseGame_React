@@ -33,9 +33,103 @@ import Horse from "./Horse"
 
 import { RadioButton } from 'react-native-paper';
 
+import { openDatabase } from 'react-native-sqlite-storage';
 
+
+
+
+
+
+
+
+const db= openDatabase(
+  {
+    name:'MainDB',
+  },
+  () => { console.log("Database Created!") },
+  error => {console.log(error)}
+);
 
 function App() { 
+
+
+  const createTable = () => {
+    db.transaction(txn => {
+      txn.executeSql(
+        `CREATE TABLE IF NOT EXISTS `
+        + `History `
+        + `(id INTEGER PRIMARY KEY AUTOINCREMENT,BetHorse INTEGER, WinHorse INTEGER, BetSize INTEGER, Balance REAL)`,
+        [],
+        (sqlTxn, res) => {
+          console.log("table created successfully");
+        },
+        error => {
+          console.log("error on creating table " + error.message);
+        },
+      );
+    });
+  };
+
+  // const createTable = () => {
+  //   db.transaction(txn => {
+  //     txn.executeSql(
+  //       "CREATE TABLE IF NOT EXISTS"
+  //       +"HISTORY"
+  //       +"(ID INTEGER PRIMARY KEY AUTOINCREMENT, BetHorse INTEGER, WinHorse INTEGER, BetSize INTEGER, Balance REAL); ",
+  //       [],
+  //       (sqlTxn,res) => {
+  //         console.log("Table created!")
+  //       },
+  //       error =>  { 
+  //         console.log("Create table fail")
+  //       },
+  //     )
+  //   })
+  // }
+
+  const insert_data = () => {
+    db.transaction(txn => {
+      txn.executeSql(
+      `INSERT INTO HISTORY (BetHorse,WinHorse,BetSize,Balance) VALUES (?,?,?,?)`,
+      [bethorse,winhorse,betsize,balance],
+      (sqlTxn, res) => {
+      console.log("data added successfully");
+      },
+      error => {
+        console.log("error on adding data: "+error.message);
+        },
+      );
+    })
+  }
+    
+
+
+  // db.transaction(txn => {
+  //   txn.executeSql(
+  //     `INSERT INTO categories (name) VALUES (?)`,
+  //     [category],
+  //     (sqlTxn, res) => {
+  //       console.log(`${category} category added successfully`);
+  //       getCategories();
+  //       setCategory("");
+  //     },
+  //     error => {
+  //       console.log("error on adding category " + error.message);
+  //     },
+  //   );
+  // });
+
+ 
+
+   useEffect(()=>{
+    createTable(); 
+   }, []);
+
+  
+  
+
+  
+
 
   
   const [mile1, setmile1] = useState(0);
@@ -47,6 +141,7 @@ function App() {
   const [balance,setbalance] = useState(20000);
   const [bethorse, setbethorse]=useState(0);
   const [betsize, setbetsize]=useState(0);
+  const [winhorse,setwinhorse]=useState(0);
 
   const styles = StyleSheet.create({
     input: {
@@ -134,7 +229,9 @@ function App() {
           else{
             if(winner==0){
               //winner=1;
+              setwinhorse(winner);
               resolve(1);
+              
               //console.log("Winner: ", winner)
             }
             clearInterval(Idd1);
@@ -152,6 +249,7 @@ function App() {
           else{
             if(winner==0){
               //winner=2;
+              setwinhorse(winner);
               resolve(2);
               //console.log("Winner: ", winner)
             }
@@ -161,7 +259,18 @@ function App() {
         
       });
       console.log("Winner: "+ winner);
-      update(winner,bethorse,betsize);
+
+
+      await new Promise(function (resolve, reject) {
+        update(winner,bethorse,betsize);
+
+        resolve("Data Updated");
+      });
+
+      insert_data();
+
+
+      
     }
 
     function update(winner,bet,betamount){
@@ -200,6 +309,10 @@ function App() {
       run();
     }
 
+    
+
+    
+
   return (
    <View>
      <Text>Balance: {balance}</Text>  
@@ -223,6 +336,11 @@ function App() {
     <Text>Horse2: {mile2}</Text>
     <Horse mile={mile2} >  
     </Horse>
+
+    <Button
+        title="Show Data"
+        onPress={() =>get_data()}
+      />
     </View>
     
   );
