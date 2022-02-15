@@ -19,6 +19,7 @@ import {
   View,
   TextInput,
   Button,
+  FlatList,
 } from 'react-native';
 
 import {
@@ -58,7 +59,7 @@ function App() {
       txn.executeSql(
         `CREATE TABLE IF NOT EXISTS `
         + `History `
-        + `(id INTEGER PRIMARY KEY AUTOINCREMENT,BetHorse INTEGER, WinHorse INTEGER, BetSize INTEGER, Balance REAL)`,
+        + `(ID INTEGER PRIMARY KEY AUTOINCREMENT, BetHorse INTEGER, WinHorse INTEGER, BetSize INTEGER, Balance REAL)`,
         [],
         (sqlTxn, res) => {
           console.log("table created successfully");
@@ -70,27 +71,10 @@ function App() {
     });
   };
 
-  // const createTable = () => {
-  //   db.transaction(txn => {
-  //     txn.executeSql(
-  //       "CREATE TABLE IF NOT EXISTS"
-  //       +"HISTORY"
-  //       +"(ID INTEGER PRIMARY KEY AUTOINCREMENT, BetHorse INTEGER, WinHorse INTEGER, BetSize INTEGER, Balance REAL); ",
-  //       [],
-  //       (sqlTxn,res) => {
-  //         console.log("Table created!")
-  //       },
-  //       error =>  { 
-  //         console.log("Create table fail")
-  //       },
-  //     )
-  //   })
-  // }
-
   const insert_data = () => {
     db.transaction(txn => {
       txn.executeSql(
-      `INSERT INTO HISTORY (BetHorse,WinHorse,BetSize,Balance) VALUES (?,?,?,?)`,
+    `INSERT INTO History (BetHorse,WinHorse,BetSize,Balance) VALUES (?,?,?,?)`,
       [bethorse,winhorse,betsize,balance],
       (sqlTxn, res) => {
       console.log("data added successfully");
@@ -101,35 +85,59 @@ function App() {
       );
     })
   }
+
+   const get_data = () => {
+    db.transaction(txn => {
+      txn.executeSql(
+        `SELECT * FROM History ORDER BY ID DESC`,
+        [],
+        (sqlTxn, res) => {
+          console.log("data retrieved successfully");
+          let len = res.rows.length;
+
+          if (len > 0) {
+            let results = [];
+            for (let i = 0; i < len; i++) {
+              let item = res.rows.item(i);
+              results.push({ id: item.ID, bet_horse: item.BetHorse, win_horse:item.WinHorse, bet_size:item.BetSize, balancee:item.Balance});
+            }
+
+            setbethistory(results);
+          }
+        },
+        error => {
+          console.log("error on getting data " + error.message);
+        },
+      );
+    });
+  };
+
+  const renderHistory = ({ item }) => {
+    return (
+      <View style={{
+        flexDirection: "row",
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        borderBottomWidth: 1,
+        borderColor: "#ddd",
+      }}>
+        <Text style={{ marginRight: 9 }}>ID: {item.id}</Text>
+        <Text>Balance:{item.balancee}/</Text>
+        <Text>Bet Horse: {item.bet_horse}/</Text>
+        <Text>Win Horse:{item.win_horse}/</Text>
+        <Text>Bet Size:{item.bet_size}/</Text>
+      </View>
+    );
+  };
     
-
-
-  // db.transaction(txn => {
-  //   txn.executeSql(
-  //     `INSERT INTO categories (name) VALUES (?)`,
-  //     [category],
-  //     (sqlTxn, res) => {
-  //       console.log(`${category} category added successfully`);
-  //       getCategories();
-  //       setCategory("");
-  //     },
-  //     error => {
-  //       console.log("error on adding category " + error.message);
-  //     },
-  //   );
-  // });
+ 
 
  
 
    useEffect(()=>{
-    createTable(); 
+    createTable();
+    get_data();
    }, []);
-
-  
-  
-
-  
-
 
   
   const [mile1, setmile1] = useState(0);
@@ -142,6 +150,7 @@ function App() {
   const [bethorse, setbethorse]=useState(0);
   const [betsize, setbetsize]=useState(0);
   const [winhorse,setwinhorse]=useState(0);
+  const [bethistory, setbethistory] = useState([]);
 
   const styles = StyleSheet.create({
     input: {
@@ -268,8 +277,6 @@ function App() {
       });
 
       insert_data();
-
-
       
     }
 
@@ -307,7 +314,10 @@ function App() {
 
     function start_race(){
       run();
+      
     }
+
+    
 
     
 
@@ -339,8 +349,14 @@ function App() {
 
     <Button
         title="Show Data"
-        onPress={() =>get_data()}
+        onPress={() =>console.log(bethistory)}
       />
+
+      <FlatList
+        data={bethistory}
+        renderItem={renderHistory}
+      />
+     
     </View>
     
   );
