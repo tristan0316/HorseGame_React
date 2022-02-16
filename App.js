@@ -7,8 +7,6 @@
  */
 
  import React, { useEffect, useState,} from 'react';
-
-
  import {
    SafeAreaView,
    StatusBar,
@@ -21,7 +19,7 @@
    FlatList,
    ScrollView,
  } from 'react-native';
- 
+
  import {
    Colors,
    DebugInstructions,
@@ -31,18 +29,10 @@
  } from 'react-native/Libraries/NewAppScreen';
  
  import Horse from "./Horse"
- 
  import { RadioButton } from 'react-native-paper';
- 
  import { openDatabase } from 'react-native-sqlite-storage';
  
- 
- 
- 
- 
- 
- 
- 
+ //Open database
  const db= openDatabase(
    {
      name:'MainDB',
@@ -52,9 +42,8 @@
  );
  
  function App() { 
- 
- 
-   const createTable = () => {
+   
+  const createTable = () => {
      db.transaction(txn => {
        txn.executeSql(
          `CREATE TABLE IF NOT EXISTS `
@@ -136,7 +125,7 @@
  
     useEffect(()=>{
      createTable();
-     get_data();
+     get_data(); 
     }, []);
  
    
@@ -223,8 +212,9 @@
      
  
      async function run(){
+      
        var winner=0;
-       winner= await new Promise(function (resolve, reject) {
+       await new Promise(function (resolve, reject) {
          setmile1(0);
          setmile2(0);
          var countmile1=0;
@@ -237,8 +227,8 @@
              }
            else{
              if(winner==0){
-               //winner=1;
-               setwinhorse(winner);
+                winner=1;
+               setwinhorse(1);
                resolve(1);
                
                //console.log("Winner: ", winner)
@@ -257,64 +247,73 @@
              }
            else{
              if(winner==0){
-               //winner=2;
-               setwinhorse(winner);
+               winner=2;
+               setwinhorse(2);
                resolve(2);
                //console.log("Winner: ", winner)
              }
              clearInterval(Idd2);
            }
          }, 1000);
-         
        });
        console.log("Winner: "+ winner);
  
  
        await new Promise(function (resolve, reject) {
          update(winner,bethorse,betsize);
+         console.log("Update succesffully")
  
-         resolve("Data Updated");
+         resolve( ()=>{ console.log("Update succesffully") }
+         );
        });
- 
-       insert_data();
-       
+
+       get_data(); 
      }
  
-     function update(winner,bet,betamount){
-       if(winner==1){
-         //adjust balance
-         if(winner==bet){
-           setbalance(balance+betamount*ratio1)
-         }
-         else{
-           setbalance(balance-betamount)
-         }
-         //adjust ratio
-         if(ratio1>2){
-           setratio1(ratio1-0.1)
-         }
-         setratio2(ratio2+0.1)
-       }
- 
-       if(winner==2){
-         //adjust balance
-         if(winner==bet){
-           setbalance(balance+betamount*ratio2)
-         }
-         else{
-           setbalance(balance-betamount)
-         }
-         //adjust ratio
-         if(ratio2>2){
-           setratio2(ratio2-0.1)
-         }
-         setratio1(ratio1+0.1)
-       }
-     }
+     async function update(winner,bet,betamount){
+
+        await new Promise(function (resolve, reject) {
+        if(winner==1){
+          //adjust balance
+          if(winner==bet){
+            setbalance(balance+betamount*ratio1)
+          }
+          else{
+            setbalance(balance-betamount)
+          }
+          //adjust ratio
+          if(ratio1>2){
+            setratio1(ratio1-0.1)
+          }
+          setratio2(ratio2+0.1)
+          resolve(1);
+        }
+  
+        if(winner==2){
+          //adjust balance
+          if(winner==bet){
+            setbalance(balance+betamount*ratio2)
+          }
+          else{
+            setbalance(balance-betamount)
+          }
+          //adjust ratio
+          if(ratio2>2){
+            setratio2(ratio2-0.1)
+          }
+          setratio1(ratio1+0.1)
+          resolve();
+        }
+       })
+      }
  
      function start_race(){
        run();
-       
+     }
+
+     function inertdatabutton(){
+      insert_data();
+      get_data();
      }
  
    return (
@@ -335,16 +334,18 @@
          title="StartRunning"
          onPress={() =>start_race() }
        />
-     <Text>Horse1: {mile1}</Text>
+     <Text>H1: {mile1}</Text>
      <Horse mile={mile1} >  
      </Horse>
-     <Text>Horse2: {mile2}</Text>
+     <Text>--------------------------------------------------</Text>
+     <Text>H2: {mile2}</Text>
      <Horse mile={mile2} >  
      </Horse>
+     <Text>--------------------------------------------------</Text>
  
      <Button
-         title="Show Data"
-         onPress={() =>console.log(bethistory)}
+         title="Insert data"
+         onPress={() => inertdatabutton()}
        />
         <Text>ID   BetHorse   WinHorse   Amount   Balance</Text>
          <FlatList
